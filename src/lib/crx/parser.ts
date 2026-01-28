@@ -6,8 +6,6 @@
  * - CRX3: Magic number "Cr24" + version (4 bytes) + header length (4 bytes) + header + ZIP
  */
 
-const CRX_MAGIC_NUMBER = 'Cr24';
-const CRX_MAGIC_BYTES = Buffer.from(CRX_MAGIC_NUMBER, 'latin1');
 const CRX2_VERSION = 2;
 const CRX3_VERSION = 3;
 
@@ -63,9 +61,9 @@ export function parseCrxHeader(buffer: ArrayBuffer): ParseResult {
     const version = view.getUint32(4, true);
 
     if (version === CRX2_VERSION) {
-      return parseCrx2Header(view, data);
+      return parseCrx2Header(view);
     } else if (version === CRX3_VERSION) {
-      return parseCrx3Header(view, data);
+      return parseCrx3Header(view);
     } else {
       return {
         success: false,
@@ -91,7 +89,7 @@ export function parseCrxHeader(buffer: ArrayBuffer): ParseResult {
  * Offset 12-15: Signature length (little-endian)
  * Offset 16+:   Public key + Signature + ZIP data
  */
-function parseCrx2Header(view: DataView, data: Uint8Array): ParseResult {
+function parseCrx2Header(view: DataView): ParseResult {
   try {
     // Check minimum size for CRX2
     if (view.byteLength < 16) {
@@ -154,7 +152,7 @@ function parseCrx2Header(view: DataView, data: Uint8Array): ParseResult {
  * Offset 8-11:  Header length (little-endian)
  * Offset 12+:   Header (protobuf format) + ZIP data
  */
-function parseCrx3Header(view: DataView, data: Uint8Array): ParseResult {
+function parseCrx3Header(view: DataView): ParseResult {
   try {
     // Check minimum size for CRX3
     if (view.byteLength < 12) {
