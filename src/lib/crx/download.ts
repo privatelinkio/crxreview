@@ -4,6 +4,12 @@
 
 import { isValidExtensionId } from './url-patterns';
 
+/**
+ * CORS proxy URL for bypassing Chrome Web Store CORS restrictions
+ * Deployed on Cloudflare Workers
+ */
+const CORS_PROXY_URL = 'https://crxreview-cors-proxy.visiquate-inc.workers.dev';
+
 interface DownloadSuccess {
   success: true;
   data: ArrayBuffer;
@@ -53,13 +59,13 @@ export async function downloadCrx(extensionId: string): Promise<DownloadResult> 
       };
     }
 
-    const url = buildCrxDownloadUrl(extensionId);
+    const directUrl = buildCrxDownloadUrl(extensionId);
 
-    const response = await fetch(url, {
+    // Route through CORS proxy to bypass Chrome Web Store CORS restrictions
+    const proxyUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(directUrl)}`;
+
+    const response = await fetch(proxyUrl, {
       method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
       // Don't redirect automatically so we can handle the redirect URL
       redirect: 'follow',
     });
