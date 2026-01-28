@@ -36,7 +36,8 @@ export function buildCrxDownloadUrl(extensionId: string): string {
     throw new Error(`Invalid extension ID: ${extensionId}`);
   }
 
-  return `https://clients2.google.com/service/update2/crx?response=redirect&os=linux&arch=x86-64&os_arch=x86_64&acceptformat=crx2,crx3&x=id%3D${extensionId}%26v%3D0`;
+  // Remove response=redirect to get the CRX file directly instead of a redirect
+  return `https://clients2.google.com/service/update2/crx?os=linux&arch=x86-64&os_arch=x86_64&acceptformat=crx2,crx3&prodversion=119.0&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
 }
 
 /**
