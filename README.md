@@ -1,65 +1,80 @@
-# CRX Review - Chrome Extension Parser and Viewer
+# CRX Review
 
-A powerful web-based tool for analyzing and inspecting Chrome Extension (CRX) files. Extract, decode, and explore the contents of CRX packages with an intuitive interface.
+[![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub Release](https://img.shields.io/badge/release-1.0.0-green.svg)](https://github.com/yourusername/crxreview/releases)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D20.x-brightgreen)](package.json)
+
+A powerful, privacy-first web-based tool for analyzing and inspecting Chrome Extension (CRX) files. Extract, decode, and explore the contents of CRX packages with an intuitive interface—all processing happens locally in your browser.
 
 ## Features
 
-- **CRX File Parsing**: Upload and parse Chrome Extension files (.crx)
-- **Archive Exploration**: Browse the file structure of extensions
-- **Manifest Analysis**: View and understand extension manifest configurations
-- **Code Syntax Highlighting**: Beautiful syntax highlighting for source files (JavaScript, JSON, HTML, CSS)
-- **File Preview**: Inspect individual files with proper formatting
-- **Download Support**: Export extracted files and archive contents
-- **Responsive Design**: Works seamlessly on desktop and tablet devices
-- **Zero External Dependencies**: Runs entirely in the browser for privacy
+- **CRX File Parsing**: Parse and validate Chrome Extension files with full CRX format support
+- **Archive Exploration**: Browse extension file structures with a responsive tree view
+- **Manifest Analysis**: Inspect extension configuration, permissions, and metadata
+- **Code Syntax Highlighting**: Beautiful highlighting for 30+ languages via Prism.js
+- **Full-Text Search**: Find content across all files with regex support
+- **Smart Filtering**: Filter by file type, size, and name patterns
+- **File Preview**: View code with formatting, images with scaling, and metadata for binaries
+- **Download Support**: Export individual files, directory structures, or the complete CRX
+- **Responsive Design**: Desktop, tablet, and mobile-optimized interface
+- **Zero Server Interaction**: All processing happens locally—your files never leave your browser
 
-## Getting Started
+## Quick Start
 
-### Prerequisites
+### Live Demo
 
-- Node.js 20.x or higher
-- npm or yarn package manager
+Visit the hosted application: [https://yourdomain.com/crxreview](https://yourdomain.com/crxreview)
 
-### Installation
+### Local Development
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/crxreview.git
-cd crxreview
-```
+**Prerequisites**: Node.js 20.x or higher
 
-2. Install dependencies:
-```bash
-npm install
-```
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/crxreview.git
+   cd crxreview
+   ```
 
-3. Start the development server:
-```bash
-npm run dev
-```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-The application will be available at `http://localhost:5173`
+3. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:5173` in your browser
 
-### Building for Production
+4. **Build for production**:
+   ```bash
+   npm run build
+   ```
+   Output is in the `dist/` directory
 
-```bash
-npm run build
-```
+5. **Preview production build**:
+   ```bash
+   npm run preview
+   ```
 
-This creates an optimized production build in the `dist/` directory.
+## How to Use
 
-### Preview Production Build
+### Basic Workflow
 
-```bash
-npm run preview
-```
+1. **Upload**: Click to select or drag-and-drop a `.crx` file
+2. **Explore**: Browse the file tree in the left sidebar
+3. **Inspect**: Click any file to view with syntax highlighting
+4. **Search**: Find content across the extension
+5. **Download**: Export files or the complete archive
 
-## Usage
+### Key Features
 
-1. **Upload a CRX File**: Click the upload area or drag and drop a .crx file
-2. **Explore Contents**: Navigate through the file structure using the sidebar
-3. **View Files**: Click on any file to preview its contents with syntax highlighting
-4. **Export Files**: Download individual files or the entire archive
+- **Search & Filter**: Find specific code, config files, or resources
+- **File Preview**: View code with proper formatting and colors
+- **Manifest Analysis**: Understand permissions and configuration
+- **Download Options**: Individual files or complete directories
+
+See the [User Guide](USER_GUIDE.md) for detailed usage instructions.
 
 ## Technology Stack
 
@@ -98,32 +113,40 @@ crxreview/
 
 ## Development
 
-### Available Scripts
+### Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with HMR |
-| `npm run build` | Build for production |
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Start dev server with hot reload |
+| `npm run build` | Build optimized production bundle |
 | `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint on source files |
-| `npm run type-check` | Run TypeScript compiler without emitting |
+| `npm run lint` | Check code quality with ESLint |
+| `npm run type-check` | Run TypeScript type checking |
 
 ### Code Quality
 
-The project uses:
-- **ESLint**: JavaScript/TypeScript linting
-- **TypeScript**: Static type checking
-- **Tailwind CSS**: Utility-first CSS
+The project maintains high standards:
 
-Run linting:
 ```bash
+# Check code style
 npm run lint
+
+# Check types
+npm run type-check
+
+# Run all checks before committing
+npm run lint && npm run type-check && npm run build
 ```
 
-Run type checking:
-```bash
-npm run type-check
-```
+### Tools & Stack
+
+- **TypeScript**: Full type safety
+- **ESLint**: Code quality and consistency
+- **Tailwind CSS**: Responsive design
+- **Vite**: Lightning-fast builds
+- **React 19**: Latest features and optimizations
+
+See [Contributing Guide](CONTRIBUTING.md) for development setup details.
 
 ## Deployment
 
@@ -175,89 +198,84 @@ The build produces optimized chunks:
 
 Total uncompressed: ~500 KB | Gzipped: ~200 KB
 
-## Troubleshooting
+## Documentation
 
-### Build Fails
-
-**Issue**: `npm run build` fails with TypeScript errors
-**Solution**: Run `npm run type-check` to see all errors, then fix them
-
-### Development Server Not Starting
-
-**Issue**: Port 5173 is already in use
-**Solution**: Either kill the process using the port or specify a different port:
-```bash
-npm run dev -- --port 3000
-```
-
-### Large File Upload Issues
-
-**Issue**: Cannot upload large CRX files
-**Solution**: Browser memory limits may apply. Try smaller files or use a different browser
-
-### Syntax Highlighting Not Working
-
-**Issue**: Code doesn't show colored syntax highlighting
-**Solution**: Ensure Prism.js CSS is loaded and the language is correctly detected
-
-## Performance Tips
-
-- Use the production build (`npm run build`) for testing
-- Clear browser cache if you encounter stale content
-- Use Chrome DevTools to profile performance bottlenecks
-- Bundle analysis: Check the gzip sizes in the build output
+- **[User Guide](USER_GUIDE.md)**: How to use CRX Review
+- **[Architecture](ARCHITECTURE.md)**: System design and components
+- **[Troubleshooting](TROUBLESHOOTING.md)**: Common issues and solutions
+- **[Contributing Guide](CONTRIBUTING.md)**: How to contribute
+- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards
+- **[Changelog](CHANGELOG.md)**: Version history and features
 
 ## Browser Support
 
-- Chrome/Edge 88+
-- Firefox 87+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
+| Browser | Version |
+|---------|---------|
+| Chrome/Chromium | 88+ |
+| Firefox | 87+ |
+| Safari | 14+ |
+| Edge | 88+ |
+
+Mobile browsers (iOS Safari, Chrome Mobile) also supported.
 
 ## Known Limitations
 
-- Maximum file size depends on available browser memory
-- Some binary files cannot be previewed
-- Large archives may take time to process
+- **File Size**: Limited by available browser memory (typically 512 MB - 2 GB)
+- **Binary Previews**: Some formats may not display
+- **Processing Time**: Large archives (100+ MB) take 30+ seconds to parse
+- **View Only**: Cannot edit files or repackage extensions
+
+See [Troubleshooting Guide](TROUBLESHOOTING.md) for solutions to common issues.
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
+We welcome contributions! Here's how to get started:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Read the [Contributing Guide](CONTRIBUTING.md)
+2. Check [Code of Conduct](CODE_OF_CONDUCT.md)
+3. Fork the repository
+4. Create a feature branch
+5. Submit a Pull Request
 
-## License
+See [Development Setup](CONTRIBUTING.md#development-setup) for detailed instructions.
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+## Getting Help
 
-## Support
+### Resources
 
-For issues, questions, or suggestions:
+- **Questions?**: Check [User Guide](USER_GUIDE.md)
+- **Issues?**: See [Troubleshooting Guide](TROUBLESHOOTING.md)
+- **Found a bug?**: Open a [GitHub Issue](https://github.com/yourusername/crxreview/issues)
+- **Feature request?**: Start a [Discussion](https://github.com/yourusername/crxreview/discussions)
 
-- Open an issue on GitHub
-- Check existing documentation in the docs folder
-- Review the API reference for implementation details
+### Reporting Issues
 
-## Changelog
-
-### v0.1.0 (Initial Release)
-- Initial CRX parser implementation
-- File exploration and preview
-- Syntax highlighting support
-- GitHub Pages deployment setup
+Include:
+- Browser and OS information
+- Steps to reproduce
+- Expected vs actual behavior
+- Error messages from console (F12)
 
 ## Acknowledgments
 
-- Built with [Vite](https://vitejs.dev/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Icons from [Lucide React](https://lucide.dev/)
-- Syntax highlighting by [Prism.js](https://prismjs.com/)
-- Archive handling by [JSZip](https://stuk.github.io/jszip/)
+CRX Review is built with amazing open-source projects:
+
+- **[Vite](https://vitejs.dev/)** - Next generation frontend tooling
+- **[React](https://react.dev/)** - JavaScript UI library
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[TypeScript](https://www.typescriptlang.org/)** - Typed JavaScript
+- **[JSZip](https://stuk.github.io/jszip/)** - ZIP file handling
+- **[Prism.js](https://prismjs.com/)** - Syntax highlighting
+- **[Zustand](https://github.com/pmndrs/zustand)** - State management
+- **[Lucide React](https://lucide.dev/)** - Icon library
+- **[js-beautify](https://beautifier.io/)** - Code formatting
+
+Special thanks to the original crxviewer project for inspiration.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Happy exploring!** For more information, visit the [project documentation](./DOCUMENTATION_INDEX.md).
+**Ready to get started?** Visit the [live application](https://yourdomain.com/crxreview) or check the [User Guide](USER_GUIDE.md) for instructions.
