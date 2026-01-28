@@ -3,6 +3,9 @@
  *
  * Combines TopBar, FileTree, CodeViewer with a resizable two-panel layout.
  * Manages state for panel widths and file loading.
+ *
+ * URL state sync: Uses useUrlState to load extensions from URL params
+ * and sync viewer state back to the URL for deep linking
  */
 
 import { useState, useEffect } from 'react';
@@ -11,6 +14,7 @@ import { FileTree } from '@/components/viewer/FileTree';
 import { CodeViewer } from '@/components/viewer/CodeViewer';
 import { PanelResizer } from '@/components/viewer/PanelResizer';
 import { useViewerStore } from '@/store/viewerStore';
+import { useUrlState } from '@/hooks/useUrlState';
 import { loadZipFile } from '@/lib/zip/extractor';
 
 const DEFAULT_LEFT_PANEL_WIDTH = 300;
@@ -24,6 +28,9 @@ export function ViewerPage() {
   const crx = useViewerStore((state) => state.crx);
   const loadingState = useViewerStore((state) => state.loadingState);
   const selectedFilePath = useViewerStore((state) => state.selectedFilePath);
+
+  // Initialize URL state sync
+  useUrlState();
 
   // Load file content when selection changes
   useEffect(() => {

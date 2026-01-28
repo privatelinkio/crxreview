@@ -11,4 +11,34 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    target: 'ES2020',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+          ],
+          syntax: [
+            'prismjs',
+          ],
+          zip: [
+            'jszip',
+          ],
+          utils: [
+            'zustand',
+            'js-beautify',
+            'lucide-react',
+          ],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+    sourcemap: false,
+    cssCodeSplit: true,
+    reportCompressedSize: true,
+  },
 })

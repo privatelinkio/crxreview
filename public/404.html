@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>crxreview - Review Chrome Extensions</title>
+  <script>
+    // Single Page App (SPA) redirect for GitHub Pages
+    // This handles client-side routing for hash-based URLs
+    // When a user navigates directly to a URL like /crxreview/#/app?url=...,
+    // GitHub Pages will serve this 404 page, which then redirects to the correct location
+
+    (function() {
+      // Get the path after the domain
+      var pathSegments = location.pathname.split('/');
+      var isGithubPages = pathSegments[1] === 'crxreview';
+      var basePath = isGithubPages ? '/crxreview' : '';
+
+      // The hash is preserved in the URL, so we just need to redirect to index.html
+      // which will load the app with the hash-based routing
+      if (!location.pathname.endsWith('index.html') && !location.pathname.endsWith('/')) {
+        location.href = basePath + '/index.html' + location.search + location.hash;
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/crxreview/src/main.tsx"></script>
+</body>
+</html>
