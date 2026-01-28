@@ -85,7 +85,7 @@ export function createSearchPattern(
 
     const flags = caseSensitive ? 'gm' : 'gmi';
     return new RegExp(pattern, flags);
-  } catch (error) {
+  } catch {
     return null;
   }
 }

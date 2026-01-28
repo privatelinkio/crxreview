@@ -22,3 +22,9 @@ export {
   copyToClipboard,
   generateDownloadFilename,
 } from './download-helper';
+
+export {
+  debounce,
+  throttle,
+  debounceCancel,
+} from './debounce';

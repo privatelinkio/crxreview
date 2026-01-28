@@ -51,13 +51,20 @@ export function ContentSearch({
   const [caseSensitive, setCaseSensitive] = useState(false);
   const [wholeWord, setWholeWord] = useState(false);
   const [useRegex, setUseRegex] = useState(false);
-  const [patternError, setPatternError] = useState<string | null>(null);
+  const [patternError, setPatternError] = useState<string | null>(() => {
+    return null;
+  });
 
   // Validate pattern when it changes or options change
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (search.query && useRegex) {
-      const error = validateSearchPattern(search.query);
-      setPatternError(error);
+      const validationError = validateSearchPattern(search.query);
+      if (validationError) {
+        setPatternError(validationError);
+      } else {
+        setPatternError(null);
+      }
     } else {
       setPatternError(null);
     }

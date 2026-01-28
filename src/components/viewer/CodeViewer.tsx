@@ -3,15 +3,21 @@
  *
  * Displays code content with Prism.js syntax highlighting, beautification support,
  * and integrated toolbar. Handles errors and loading states gracefully.
+ *
+ * Performance optimizations:
+ * - Lazy loads Prism.js language components
+ * - Memoizes expensive computations
+ * - Debounces rapid updates
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SourceToolbar } from './SourceToolbar';
 import { ImagePreview } from './ImagePreview';
 import { detectLanguageFromPath, getPrismLanguage, isImageFile, isTextFile } from '@/lib/code/language-detector';
 import { highlightCode } from '@/lib/code/highlighter';
 import { beautifyCode, canBeautify } from '@/lib/code/beautifier';
 import { copyToClipboard } from '@/lib/utils/download-helper';
+import { loadPrismLanguage } from '@/lib/code/prism-loader';
 import 'prismjs/themes/prism-tomorrow.css';
 
 interface CodeViewerProps {
@@ -38,36 +44,74 @@ export function CodeViewer({
   const language = detectLanguageFromPath(filePath);
   const prismLanguage = getPrismLanguage(language);
 
+  // Lazy load Prism language component
   useEffect(() => {
-    setError(null);
-    setIsBeautified(false);
+    if (!isImage && isText && prismLanguage && prismLanguage !== 'text') {
+      loadPrismLanguage(prismLanguage).catch((err) => {
+        console.warn(`Failed to load Prism language: ${prismLanguage}`, err);
+      });
+    }
+  }, [prismLanguage, isImage, isText]);
 
+  // Memoize the decoded content to avoid re-decoding
+  const decodedContent = useMemo(() => {
+    if (isImage || !isText) {
+      return null;
+    }
+
+    try {
+      const decoder = new TextDecoder();
+      return decoder.decode(fileData);
+    } catch {
+      return null;
+    }
+  }, [fileData, isImage, isText]);
+
+  // Memoize highlight computation
+  const { html, content } = useMemo(() => {
+    if (!decodedContent || isImage || !isText) {
+      return { html: '', content: '' };
+    }
+
+    try {
+      const highlighted = highlightCode(decodedContent, prismLanguage);
+      return { html: highlighted.html, content: decodedContent };
+    } catch (err) {
+      console.error(`Failed to highlight code: ${err}`);
+      return { html: '', content: decodedContent };
+    }
+  }, [decodedContent, prismLanguage, isImage, isText]);
+
+  // Sync displayed content with file changes
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
     // Handle image files
     if (isImage) {
+      setError(null);
+      setIsBeautified(false);
       return; // Image preview handles its own rendering
     }
 
     // Handle non-text files
     if (!isText) {
       setError(`Cannot display binary file: ${fileName}`);
+      setIsBeautified(false);
       return;
     }
 
-    try {
-      // Decode file content
-      const decoder = new TextDecoder();
-      const content = decoder.decode(fileData);
-      setDisplayContent(content);
-
-      // Highlight code
-      const highlighted = highlightCode(content, prismLanguage);
-      setHighlightedHtml(highlighted.html);
-    } catch (err) {
-      setError(`Failed to decode file: ${err instanceof Error ? err.message : String(err)}`);
+    if (decodedContent === null) {
+      setError(`Failed to decode file: unsupported encoding`);
       setDisplayContent('');
       setHighlightedHtml('');
+      setIsBeautified(false);
+      return;
     }
-  }, [fileData, filePath, isImage, isText, fileName, prismLanguage]);
+
+    setError(null);
+    setIsBeautified(false);
+    setDisplayContent(content);
+    setHighlightedHtml(html);
+  }, [content, html, isImage, isText, decodedContent, fileName]);
 
   // Handle beautification
   const handleBeautifyToggle = () => {

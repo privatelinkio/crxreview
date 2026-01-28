@@ -43,9 +43,9 @@ export function SearchAndFilterPanel({
 
   // Get all files from the CRX tree
   const allFiles = useMemo(() => {
-    if (!crx?.fileTree) return [];
+    if (!crx || !crx.fileTree) return [];
     return getAllFiles(crx.fileTree);
-  }, [crx?.fileTree]);
+  }, [crx]);
 
   // Create file content array for search
   const fileContents = useMemo(() => {
@@ -60,10 +60,10 @@ export function SearchAndFilterPanel({
 
   // Get filtered files
   const filteredFiles = useMemo(() => {
-    if (!crx?.fileTree) return [];
+    if (!crx || !crx.fileTree) return [];
     const filtered = fileFilter.getFilteredTree(crx.fileTree);
     return getAllFiles(filtered);
-  }, [crx?.fileTree, fileFilter]);
+  }, [crx, fileFilter]);
 
   const handleSearchClose = () => {
     setIsSearchOpen(false);

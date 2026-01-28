@@ -6,31 +6,85 @@
  *
  * URL state sync: Uses useUrlState to load extensions from URL params
  * and sync viewer state back to the URL for deep linking
+ *
+ * Features:
+ * - Keyboard navigation (arrow keys for file tree, Ctrl/Cmd+F for search)
+ * - Search and filter integration
+ * - Responsive layout for mobile/tablet
+ * - Deep linking via URL state
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { TopBar } from '@/components/viewer/TopBar';
 import { FileTree } from '@/components/viewer/FileTree';
 import { CodeViewer } from '@/components/viewer/CodeViewer';
 import { PanelResizer } from '@/components/viewer/PanelResizer';
+import { SearchAndFilterPanel } from '@/components/viewer/SearchAndFilterPanel';
 import { useViewerStore } from '@/store/viewerStore';
 import { useUrlState } from '@/hooks/useUrlState';
+import { useFileSelection } from '@/hooks/useFileSelection';
 import { loadZipFile } from '@/lib/zip/extractor';
 
 const DEFAULT_LEFT_PANEL_WIDTH = 300;
+const MOBILE_BREAKPOINT = 768;
 
 export function ViewerPage() {
   const [leftPanelWidth, setLeftPanelWidth] = useState(DEFAULT_LEFT_PANEL_WIDTH);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [currentFileData, setCurrentFileData] = useState<Uint8Array | null>(null);
   const [fileLoadError, setFileLoadError] = useState<string | null>(null);
+  const [showSearchPanel, setShowSearchPanel] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < MOBILE_BREAKPOINT);
+  const fileTreeRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const crx = useViewerStore((state) => state.crx);
   const loadingState = useViewerStore((state) => state.loadingState);
   const selectedFilePath = useViewerStore((state) => state.selectedFilePath);
+  const selectFile = useViewerStore((state) => state.selectFile);
+  const { selectFile: handleSelectFile } = useFileSelection();
 
   // Initialize URL state sync
   useUrlState();
+
+  // Handle responsive layout
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+      // Adjust panel width on mobile
+      if (window.innerWidth < MOBILE_BREAKPOINT && leftPanelWidth > window.innerWidth * 0.4) {
+        setLeftPanelWidth(Math.max(200, window.innerWidth * 0.3));
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [leftPanelWidth]);
+
+  // Handle keyboard navigation
+  const handleKeyboardNavigation = useCallback(
+    (e: KeyboardEvent) => {
+      // Ctrl/Cmd+F for search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        setShowSearchPanel(!showSearchPanel);
+        if (!showSearchPanel && searchInputRef.current) {
+          setTimeout(() => searchInputRef.current?.focus(), 0);
+        }
+      }
+
+      // Escape to close search panel
+      if (e.key === 'Escape' && showSearchPanel) {
+        setShowSearchPanel(false);
+      }
+    },
+    [showSearchPanel]
+  );
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyboardNavigation);
+    return () => window.removeEventListener('keydown', handleKeyboardNavigation);
+  }, [handleKeyboardNavigation]);
 
   // Load file content when selection changes
   useEffect(() => {
@@ -146,31 +200,71 @@ export function ViewerPage() {
     <div className="h-screen flex flex-col bg-gray-50">
       <TopBar />
 
-      <div className="flex-1 flex min-h-0">
-        {/* File Tree Panel */}
-        <div style={{ width: `${leftPanelWidth}px` }} className="flex flex-col">
-          <div className="px-3 py-2 border-b border-gray-200 bg-gray-100">
-            <h2 className="text-sm font-semibold text-gray-900">Files</h2>
-          </div>
-          <FileTree node={crx.fileTree} />
-        </div>
+      <div className="flex-1 flex min-h-0 flex-col lg:flex-row">
+        {/* File Tree Panel - visible on desktop, hidden on mobile unless fullscreen */}
+        {(!isMobile || !selectedFilePath) && (
+          <>
+            <div
+              ref={fileTreeRef}
+              style={isMobile ? {} : { width: `${leftPanelWidth}px` }}
+              className="flex flex-col lg:min-w-0 border-b-2 lg:border-b-0 border-gray-200"
+            >
+              <div className="px-3 py-2 border-b border-gray-200 bg-gray-100">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-gray-900">Files</h2>
+                  {isMobile && selectedFilePath && (
+                    <button
+                      onClick={() => selectFile(selectedFilePath)}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      title="View code"
+                    >
+                      View
+                    </button>
+                  )}
+                </div>
+              </div>
+              <FileTree node={crx.fileTree} />
+            </div>
 
-        {/* Resizer */}
-        <PanelResizer
-          onResize={setLeftPanelWidth}
-          minLeftWidth={200}
-          minRightWidth={300}
-        />
+            {!isMobile && (
+              <PanelResizer
+                onResize={setLeftPanelWidth}
+                minLeftWidth={200}
+                minRightWidth={300}
+              />
+            )}
+          </>
+        )}
 
         {/* Code Viewer Panel */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 lg:min-h-0">
           {selectedFilePath ? (
             <>
-              <div className="px-3 py-2 border-b border-gray-200 bg-gray-100">
+              <div className="px-3 py-2 border-b border-gray-200 bg-gray-100 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-gray-900 truncate">
                   {getSelectedFileName()}
                 </h2>
+                {isMobile && (
+                  <button
+                    onClick={() => selectFile('')}
+                    className="ml-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    title="Back to file list"
+                  >
+                    Back
+                  </button>
+                )}
               </div>
+
+              {/* Search Panel */}
+              {showSearchPanel && (
+                <div className="border-b border-gray-200 bg-white p-4 shadow-sm">
+                  <SearchAndFilterPanel
+                    onSelectFile={handleSelectFile}
+                    className="m-0"
+                  />
+                </div>
+              )}
+
               {fileLoadError ? (
                 <div className="flex-1 flex items-center justify-center p-6">
                   <div className="text-center">
@@ -196,8 +290,12 @@ export function ViewerPage() {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center bg-white">
-              <div className="text-center">
+              <div className="text-center space-y-2">
                 <p className="text-gray-600">Select a file to view its contents</p>
+                <p className="text-gray-500 text-sm">
+                  Press <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+F</kbd> or{' '}
+                  <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Cmd+F</kbd> to search
+                </p>
               </div>
             </div>
           )}
@@ -213,6 +311,7 @@ export function ViewerPage() {
  * @param path - Path to find
  * @returns Found node or undefined
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function findNodeByPath(node: any, path: string): any | undefined {
   if (node.path === path) {
     return node;

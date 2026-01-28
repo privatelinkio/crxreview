@@ -111,7 +111,7 @@ export function createFilterPattern(
       const flags = caseSensitive ? 'g' : 'gi';
       return new RegExp(regexPattern, flags);
     }
-  } catch (error) {
+  } catch {
     return null;
   }
 }
