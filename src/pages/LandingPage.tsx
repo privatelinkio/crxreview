@@ -60,7 +60,7 @@ export function LandingPage() {
             <span className="text-xl font-bold text-gray-900">crxreview</span>
           </div>
           <a
-            href="https://github.com/brentlangston/crxreview"
+            href="https://github.com/privatelinkio/crxreview"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
@@ -246,7 +246,7 @@ export function LandingPage() {
             <div>
               <h4 className="font-semibold text-gray-900 mb-4">Open Source</h4>
               <a
-                href="https://github.com/brentlangston/crxreview"
+                href="https://github.com/privatelinkio/crxreview"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition"
