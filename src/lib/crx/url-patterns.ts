@@ -18,7 +18,10 @@ type ExtensionIdResult = ExtensionIdMatch | ExtensionIdNoMatch;
  * Patterns for matching Chrome Web Store URLs
  */
 const URL_PATTERNS = {
-  // Standard Chrome Web Store URL
+  // New Chrome Web Store URL format (2024+)
+  newStandard: /^https?:\/\/chromewebstore\.google\.com\/detail\/[^/]+\/([a-z]{32})/,
+  newStandardNoLabel: /^https?:\/\/chromewebstore\.google\.com\/detail\/([a-z]{32})/,
+  // Legacy Chrome Web Store URL
   standard: /^https?:\/\/chrome\.google\.com\/webstore\/detail\/[^/]+\/([a-z]{32})/,
   // Without label (just ID)
   standardNoLabel: /^https?:\/\/chrome\.google\.com\/webstore\/detail\/([a-z]{32})/,
@@ -50,7 +53,25 @@ export function extractExtensionId(input: string): ExtensionIdResult {
 
   const trimmedInput = input.trim();
 
-  // Try standard URL with label
+  // Try new Chrome Web Store URL with label
+  const newStandardMatch = trimmedInput.match(URL_PATTERNS.newStandard);
+  if (newStandardMatch) {
+    return {
+      success: true,
+      extensionId: newStandardMatch[1],
+    };
+  }
+
+  // Try new Chrome Web Store URL without label
+  const newStandardNoLabelMatch = trimmedInput.match(URL_PATTERNS.newStandardNoLabel);
+  if (newStandardNoLabelMatch) {
+    return {
+      success: true,
+      extensionId: newStandardNoLabelMatch[1],
+    };
+  }
+
+  // Try legacy standard URL with label
   const standardMatch = trimmedInput.match(URL_PATTERNS.standard);
   if (standardMatch) {
     return {
@@ -59,7 +80,7 @@ export function extractExtensionId(input: string): ExtensionIdResult {
     };
   }
 
-  // Try standard URL without label
+  // Try legacy standard URL without label
   const standardNoLabelMatch = trimmedInput.match(URL_PATTERNS.standardNoLabel);
   if (standardNoLabelMatch) {
     return {
