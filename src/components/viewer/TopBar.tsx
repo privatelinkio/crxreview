@@ -52,7 +52,7 @@ export function TopBar() {
   const isLoading = loadingState === 'loading';
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
+    <div className="bg-white border-b border-gray-200 shadow-sm relative z-10">
       {/* Main toolbar */}
       <div className="px-4 py-4">
         <div className="flex flex-col gap-3">
@@ -67,9 +67,10 @@ export function TopBar() {
               className="
                 flex-1 px-3 py-2 border border-gray-300 rounded
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                text-sm
+                text-sm relative z-10
               "
               disabled={isLoading}
+              style={{ pointerEvents: 'auto' }}
             />
             <button
               onClick={handleLoadFromUrl}
