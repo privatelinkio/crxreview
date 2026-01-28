@@ -41,8 +41,41 @@ export function buildCrxDownloadUrl(extensionId: string): string {
 }
 
 /**
+ * Parse Chrome update XML response to extract download URL
+ *
+ * @param xmlText - XML response from Chrome update server
+ * @returns Download URL or null if not found
+ */
+function extractDownloadUrl(xmlText: string): string | null {
+  try {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+    // Check for XML parsing errors
+    const parserError = xmlDoc.querySelector('parsererror');
+    if (parserError) {
+      console.error('XML parsing error:', parserError.textContent);
+      return null;
+    }
+
+    // Extract codebase URL from updatecheck element
+    const updatecheck = xmlDoc.querySelector('updatecheck');
+    if (!updatecheck) {
+      console.error('No updatecheck element found in XML');
+      return null;
+    }
+
+    const codebase = updatecheck.getAttribute('codebase');
+    return codebase;
+  } catch (error) {
+    console.error('Error parsing XML:', error);
+    return null;
+  }
+}
+
+/**
  * Fetch CRX file from Chrome's update server
- * 
+ *
  * Downloads the CRX file for a given extension ID. Handles:
  * - Network errors with descriptive messages
  * - HTTP error responses
@@ -60,25 +93,50 @@ export async function downloadCrx(extensionId: string): Promise<DownloadResult> 
       };
     }
 
-    const directUrl = buildCrxDownloadUrl(extensionId);
+    // Step 1: Get the update metadata XML which contains the actual download URL
+    const metadataUrl = buildCrxDownloadUrl(extensionId);
+    const proxyMetadataUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(metadataUrl)}`;
 
-    // Route through CORS proxy to bypass Chrome Web Store CORS restrictions
-    const proxyUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(directUrl)}`;
-
-    const response = await fetch(proxyUrl, {
+    const metadataResponse = await fetch(proxyMetadataUrl, {
       method: 'GET',
-      // Don't redirect automatically so we can handle the redirect URL
       redirect: 'follow',
     });
 
-    if (!response.ok) {
+    if (!metadataResponse.ok) {
       return {
         success: false,
-        error: `Failed to download CRX: HTTP ${response.status} ${response.statusText}`,
+        error: `Failed to fetch extension metadata: HTTP ${metadataResponse.status} ${metadataResponse.statusText}`,
       };
     }
 
-    const data = await response.arrayBuffer();
+    const xmlText = await metadataResponse.text();
+
+    // Step 2: Parse XML to extract the actual download URL
+    const downloadUrl = extractDownloadUrl(xmlText);
+
+    if (!downloadUrl) {
+      return {
+        success: false,
+        error: 'Could not find download URL in update metadata',
+      };
+    }
+
+    // Step 3: Download the actual CRX file
+    const proxyDownloadUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(downloadUrl)}`;
+
+    const crxResponse = await fetch(proxyDownloadUrl, {
+      method: 'GET',
+      redirect: 'follow',
+    });
+
+    if (!crxResponse.ok) {
+      return {
+        success: false,
+        error: `Failed to download CRX: HTTP ${crxResponse.status} ${crxResponse.statusText}`,
+      };
+    }
+
+    const data = await crxResponse.arrayBuffer();
 
     if (data.byteLength === 0) {
       return {

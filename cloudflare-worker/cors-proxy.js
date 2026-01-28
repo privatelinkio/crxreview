@@ -13,7 +13,8 @@ const ALLOWED_ORIGINS = [
 
 const CHROME_WEB_STORE_DOMAINS = [
   'clients2.google.com',
-  'clients2.googleapis.com'
+  'clients2.googleapis.com',
+  'clients2.googleusercontent.com'
 ];
 
 export default {
