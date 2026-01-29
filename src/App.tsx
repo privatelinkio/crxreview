@@ -37,17 +37,19 @@ function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <HashRouter>
-        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/app" element={<ViewerPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </HashRouter>
-    </ErrorBoundary>
+    <div className="light">
+      <ErrorBoundary>
+        <HashRouter>
+          <Suspense fallback={<div className="flex items-center justify-center h-screen bg-white text-gray-900">Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/app" element={<ViewerPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </HashRouter>
+      </ErrorBoundary>
+    </div>
   );
 }
 

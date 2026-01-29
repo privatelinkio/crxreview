@@ -37,23 +37,23 @@ export function PasswordModal({ onCorrectPassword }: PasswordModalProps) {
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
         <div className="flex items-center justify-center mb-6">
-          <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
-            <Lock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <div className="bg-blue-100 p-3 rounded-full">
+            <Lock className="w-8 h-8 text-blue-600" />
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-center mb-2 text-gray-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-center mb-2 text-gray-900">
           Protected Area
         </h2>
-        <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
+        <p className="text-center text-gray-700 mb-6">
           Please enter the password to access CRX Review
         </p>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
             <input
@@ -61,7 +61,7 @@ export function PasswordModal({ onCorrectPassword }: PasswordModalProps) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 placeholder:text-gray-500"
               placeholder="Enter password"
               autoFocus
               disabled={isLoading}
@@ -69,8 +69,8 @@ export function PasswordModal({ onCorrectPassword }: PasswordModalProps) {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
@@ -83,7 +83,7 @@ export function PasswordModal({ onCorrectPassword }: PasswordModalProps) {
           </button>
         </form>
 
-        <p className="mt-6 text-xs text-center text-gray-700 dark:text-gray-400">
+        <p className="mt-6 text-xs text-center text-gray-600">
           This is a password-protected application for authorized users only.
         </p>
       </div>
