@@ -1,0 +1,360 @@
+openapi: 3.1.0
+info:
+  title: CRX Review API
+  version: 1.0.0
+  description: REST API for Chrome Extension analysis and parsing
+
+servers:
+  - url: https://crxreview-api.privatelink.io
+    description: Production API
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      description: Check API health status
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      timestamp:
+                        type: string
+                      version:
+                        type: string
+                      services:
+                        type: object
+                        properties:
+                          r2:
+                            type: string
+                          kv:
+                            type: string
+
+  /api/v1/extensions/download:
+    post:
+      operationId: downloadExtension
+      summary: Download extension from Chrome Web Store
+      description: Download a Chrome extension by ID or URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - input
+              properties:
+                input:
+                  type: string
+                  description: Extension ID or Chrome Web Store URL
+                  example: "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+      responses:
+        '201':
+          description: Extension downloaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      sessionId:
+                        type: string
+                        format: uuid
+                      extensionId:
+                        type: string
+                      fileName:
+                        type: string
+                      fileCount:
+                        type: integer
+                      size:
+                        type: integer
+                      createdAt:
+                        type: string
+                        format: date-time
+                      expiresAt:
+                        type: string
+                        format: date-time
+                      version:
+                        type: string
+
+  /api/v1/extensions/{sessionId}:
+    get:
+      operationId: getSessionMetadata
+      summary: Get extension session metadata
+      description: Retrieve metadata about a downloaded extension session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Session ID from download/upload
+      responses:
+        '200':
+          description: Session metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      sessionId:
+                        type: string
+                      extensionId:
+                        type: string
+                      fileName:
+                        type: string
+                      fileCount:
+                        type: integer
+                      size:
+                        type: integer
+                      createdAt:
+                        type: string
+                      expiresAt:
+                        type: string
+
+  /api/v1/extensions/{sessionId}/manifest:
+    get:
+      operationId: getManifest
+      summary: Get extension manifest
+      description: Retrieve and parse the manifest.json file
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Parsed manifest
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      manifest:
+                        type: object
+                        description: Full manifest.json content
+                      manifestVersion:
+                        type: integer
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                      hostPermissions:
+                        type: array
+                        items:
+                          type: string
+
+  /api/v1/extensions/{sessionId}/files:
+    get:
+      operationId: getFileTree
+      summary: Get file tree
+      description: Get hierarchical file tree or flat file list
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [tree, flat]
+            default: tree
+      responses:
+        '200':
+          description: File tree or list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      root:
+                        type: object
+                      totalFiles:
+                        type: integer
+                      totalSize:
+                        type: integer
+
+  /api/v1/extensions/{sessionId}/search:
+    post:
+      operationId: searchContent
+      summary: Search file contents
+      description: Search for text or regex patterns across all files
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Search query (text or regex)
+                  example: "chrome.tabs"
+                caseSensitive:
+                  type: boolean
+                  default: false
+                useRegex:
+                  type: boolean
+                  default: false
+                wholeWord:
+                  type: boolean
+                  default: false
+                contextLines:
+                  type: integer
+                  default: 2
+                  minimum: 0
+                  maximum: 10
+                filePattern:
+                  type: string
+                  description: Glob pattern to filter files
+                  example: "*.js"
+                maxResults:
+                  type: integer
+                  default: 100
+                  minimum: 1
+                  maximum: 1000
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            file:
+                              type: string
+                            line:
+                              type: integer
+                            column:
+                              type: integer
+                            match:
+                              type: string
+                            context:
+                              type: object
+                              properties:
+                                before:
+                                  type: array
+                                  items:
+                                    type: string
+                                after:
+                                  type: array
+                                  items:
+                                    type: string
+                      totalMatches:
+                        type: integer
+                      searchedFiles:
+                        type: integer
+                      hasMore:
+                        type: boolean
+
+  /api/v1/extensions/{sessionId}/filter:
+    post:
+      operationId: filterFiles
+      summary: Filter files
+      description: Filter files by name pattern and category
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                namePattern:
+                  type: string
+                  description: Pattern to match file names
+                  example: "*.js"
+                useRegex:
+                  type: boolean
+                  default: false
+                categories:
+                  type: array
+                  items:
+                    type: string
+                    enum: [code, config, resource, documentation, asset, other]
+                caseSensitive:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Filtered files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      files:
+                        type: array
+                        items:
+                          type: object
+                      totalMatched:
+                        type: integer
