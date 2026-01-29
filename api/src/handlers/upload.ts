@@ -36,10 +36,10 @@ export async function uploadHandler(c: AppContext): Promise<Response> {
       return badRequestResponse(c, 'Missing or invalid file in request');
     }
 
-    // Validate file size
-    const maxFileSize = parseInt(c.env.MAX_FILE_SIZE || '52428800', 10); // 50MB default
+    // Validate file size (150 MB default)
+    const maxFileSize = parseInt(c.env.MAX_FILE_SIZE || '157286400', 10);
     if (file.size > maxFileSize) {
-      return badRequestResponse(c, `File size exceeds maximum allowed (${maxFileSize} bytes)`, {
+      return badRequestResponse(c, `File size exceeds maximum allowed (${maxFileSize} bytes / ${(maxFileSize / 1024 / 1024).toFixed(0)} MB)`, {
         maxSize: maxFileSize,
         actualSize: file.size,
       });

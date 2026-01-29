@@ -21,10 +21,10 @@ preview_bucket_name = "crxreview-storage-preview"
 
 # Environment variables
 [env.production]
-vars = { SESSION_TTL = "1800", MAX_FILE_SIZE = "52428800", RATE_LIMIT_DOWNLOAD = "10", API_VERSION = "1.0.0" }
+vars = { SESSION_TTL = "1800", MAX_FILE_SIZE = "157286400", RATE_LIMIT_DOWNLOAD = "10", API_VERSION = "1.0.0" }
 
 [env.preview]
-vars = { SESSION_TTL = "1800", MAX_FILE_SIZE = "52428800", RATE_LIMIT_DOWNLOAD = "10", API_VERSION = "1.0.0-preview" }
+vars = { SESSION_TTL = "1800", MAX_FILE_SIZE = "157286400", RATE_LIMIT_DOWNLOAD = "10", API_VERSION = "1.0.0-preview" }
 
 # Triggers - Run cleanup every 6 hours
 [triggers]

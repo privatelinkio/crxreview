@@ -443,7 +443,7 @@ export function createMockEnv(overrides?: Partial<any>): any {
     SESSION_KV: new MockKVNamespace(),
     ENVIRONMENT: 'test',
     SESSION_TTL: 1800,
-    MAX_FILE_SIZE: 52428800,
+    MAX_FILE_SIZE: 157286400,
     RATE_LIMIT_DOWNLOAD: 10,
     RATE_LIMIT_WINDOW: 3600,
     API_KEY_1: 'test-api-key-1',

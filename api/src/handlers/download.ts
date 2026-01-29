@@ -80,12 +80,12 @@ export async function downloadHandler(c: AppContext): Promise<Response> {
 
     const crxData = downloadResult.data;
 
-    // Validate max file size
-    const maxFileSize = parseInt(c.env.MAX_FILE_SIZE || '52428800', 10);
+    // Validate max file size (150 MB default)
+    const maxFileSize = parseInt(c.env.MAX_FILE_SIZE || '157286400', 10);
     if (crxData.byteLength > maxFileSize) {
       return badRequestResponse(
         c,
-        `Downloaded file size exceeds maximum allowed (${maxFileSize} bytes)`,
+        `Downloaded file size exceeds maximum allowed (${maxFileSize} bytes / ${(maxFileSize / 1024 / 1024).toFixed(0)} MB)`,
         {
           maxSize: maxFileSize,
           actualSize: crxData.byteLength,

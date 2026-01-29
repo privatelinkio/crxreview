@@ -119,7 +119,7 @@ const mockEnv: Env = {
   // Environment configuration
   ENVIRONMENT: 'development',
   SESSION_TTL: '1800',
-  MAX_FILE_SIZE: '52428800',
+  MAX_FILE_SIZE: '157286400',
   RATE_LIMIT_DOWNLOAD: '10',
   RATE_LIMIT_UPLOAD: '5',
   RATE_LIMIT_SEARCH: '20',
