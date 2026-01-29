@@ -132,6 +132,32 @@ paths:
                         type: string
                       expiresAt:
                         type: string
+    delete:
+      operationId: deleteSession
+      summary: Delete extension session
+      description: Delete an extension session and all associated files
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
 
   /api/v1/extensions/{sessionId}/manifest:
     get:
@@ -358,3 +384,126 @@ paths:
                           type: object
                       totalMatched:
                         type: integer
+
+  /api/v1/extensions/upload:
+    post:
+      operationId: uploadExtension
+      summary: Upload CRX file
+      description: Upload a Chrome extension CRX file for analysis
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CRX file (max 50MB)
+      responses:
+        '201':
+          description: Extension uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      sessionId:
+                        type: string
+                        format: uuid
+                      extensionId:
+                        type: string
+                      fileName:
+                        type: string
+                      fileCount:
+                        type: integer
+                      size:
+                        type: integer
+                      createdAt:
+                        type: string
+                        format: date-time
+                      expiresAt:
+                        type: string
+                        format: date-time
+                      version:
+                        type: string
+
+  /api/v1/extensions/{sessionId}/files/{path}:
+    get:
+      operationId: extractFile
+      summary: Extract specific file
+      description: Extract and return a specific file from the extension
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+          description: File path within the extension (e.g., "manifest.json", "background.js")
+        - name: encoding
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [utf-8, base64]
+          description: Encoding for the file content (auto-detected if not specified)
+      responses:
+        '200':
+          description: File content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      path:
+                        type: string
+                      content:
+                        type: string
+                        description: File content (base64 for binary, utf-8 for text)
+                      mimeType:
+                        type: string
+                      size:
+                        type: integer
+                      encoding:
+                        type: string
+                        enum: [utf-8, base64]
+
+  /api/v1/extensions/{sessionId}/download/zip:
+    get:
+      operationId: downloadAsZip
+      summary: Download extension as ZIP
+      description: Download the extension as a standard ZIP file (CRX header stripped)
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: ZIP file download
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
