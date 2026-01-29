@@ -35,15 +35,23 @@ type DownloadResult = DownloadSuccess | DownloadError;
  * https://clients2.google.com/service/update2/crx
  *
  * @param extensionId - 32-character Chrome extension ID
+ * @param os - Operating system (defaults to 'linux', can be 'windows', 'mac')
+ * @param arch - Architecture (defaults to 'x86-64')
  * @returns Download URL string
  */
-export function buildCrxDownloadUrl(extensionId: string): string {
+export function buildCrxDownloadUrl(
+  extensionId: string,
+  os: string = 'linux',
+  arch: string = 'x86-64'
+): string {
   if (!isValidExtensionId(extensionId)) {
     throw new Error(`Invalid extension ID: ${extensionId}`);
   }
 
-  // Remove response=redirect to get the CRX file directly instead of a redirect
-  return `https://clients2.google.com/service/update2/crx?os=linux&arch=x86-64&os_arch=x86_64&acceptformat=crx2,crx3&prodversion=119.0&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
+  // Use maximum prodversion (2147483647) to avoid noupdate responses
+  // Research shows values <88 return 204/noupdate, max value gives best results
+  // See: https://gist.github.com/paulirish/78d6c1406c901be02c2d
+  return `https://clients2.google.com/service/update2/crx?os=${os}&arch=${arch}&os_arch=${arch}&acceptformat=crx2,crx3&prodversion=2147483647&x=id%3D${extensionId}%26installsource%3Dondemand%26uc`;
 }
 
 /**
@@ -86,6 +94,13 @@ function extractDownloadUrl(xmlText: string): string | null {
       return null;
     }
 
+    // Check if status is noupdate (extension not available for download)
+    const status = (updatecheckElement as Record<string, any>)['@_status'];
+    if (status === 'noupdate') {
+      console.error('Extension returned status=noupdate');
+      return 'noupdate';
+    }
+
     const codebase = (updatecheckElement as Record<string, any>)['@_codebase'];
 
     if (!codebase) {
@@ -101,12 +116,98 @@ function extractDownloadUrl(xmlText: string): string | null {
 }
 
 /**
+ * Try downloading CRX with specific OS/arch parameters
+ *
+ * @param extensionId - Extension ID
+ * @param os - Operating system parameter
+ * @param arch - Architecture parameter
+ * @returns Download result or null if should try next fallback
+ */
+async function tryDownloadWithParams(
+  extensionId: string,
+  os: string,
+  arch: string
+): Promise<DownloadResult | null> {
+  try {
+    // Step 1: Get the update metadata XML which contains the actual download URL
+    const metadataUrl = buildCrxDownloadUrl(extensionId, os, arch);
+    const proxyMetadataUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(metadataUrl)}`;
+
+    const metadataResponse = await fetch(proxyMetadataUrl, {
+      method: 'GET',
+      redirect: 'follow',
+    });
+
+    if (!metadataResponse.ok) {
+      return null; // Try next fallback
+    }
+
+    // Check if response is binary CRX (some extensions return CRX directly)
+    const contentType = metadataResponse.headers.get('content-type') || '';
+    if (
+      contentType.includes('application/x-chrome-extension') ||
+      contentType.includes('application/octet-stream')
+    ) {
+      const data = await metadataResponse.arrayBuffer();
+      if (data.byteLength > 0) {
+        return {
+          success: true,
+          data,
+        };
+      }
+      return null; // Empty binary, try next fallback
+    }
+
+    // Parse XML response
+    const xmlText = await metadataResponse.text();
+
+    // Step 2: Parse XML to extract the actual download URL
+    const downloadUrl = extractDownloadUrl(xmlText);
+
+    if (downloadUrl === 'noupdate') {
+      return null; // Try next fallback
+    }
+
+    if (!downloadUrl) {
+      return null; // Try next fallback
+    }
+
+    // Step 3: Download the actual CRX file
+    const proxyDownloadUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(downloadUrl)}`;
+
+    const crxResponse = await fetch(proxyDownloadUrl, {
+      method: 'GET',
+      redirect: 'follow',
+    });
+
+    if (!crxResponse.ok) {
+      return null; // Try next fallback
+    }
+
+    const data = await crxResponse.arrayBuffer();
+
+    if (data.byteLength === 0) {
+      return null; // Try next fallback
+    }
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    return null; // Try next fallback
+  }
+}
+
+/**
  * Fetch CRX file from Chrome's update server
  *
  * Downloads the CRX file for a given extension ID. Handles:
  * - Network errors with descriptive messages
  * - HTTP error responses
  * - Invalid extension IDs
+ * - Binary CRX responses (some extensions return CRX directly instead of XML)
+ * - Multiple fallback strategies with different OS/arch combinations
  * - Two-step XML parsing for reliability
  *
  * @param extensionId - 32-character Chrome extension ID
@@ -121,61 +222,27 @@ export async function downloadCrx(extensionId: string): Promise<DownloadResult> 
       };
     }
 
-    // Step 1: Get the update metadata XML which contains the actual download URL
-    const metadataUrl = buildCrxDownloadUrl(extensionId);
-    const proxyMetadataUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(metadataUrl)}`;
+    // Try multiple OS/arch combinations as fallbacks
+    // Research shows different combinations may work for different extensions
+    const strategies = [
+      { os: 'linux', arch: 'x86-64' },
+      { os: 'mac', arch: 'x86-64' },
+      { os: 'windows', arch: 'x86-64' },
+      { os: 'linux', arch: 'arm' },
+    ];
 
-    const metadataResponse = await fetch(proxyMetadataUrl, {
-      method: 'GET',
-      redirect: 'follow',
-    });
-
-    if (!metadataResponse.ok) {
-      return {
-        success: false,
-        error: `Failed to fetch extension metadata: HTTP ${metadataResponse.status} ${metadataResponse.statusText}`,
-      };
+    for (const strategy of strategies) {
+      const result = await tryDownloadWithParams(extensionId, strategy.os, strategy.arch);
+      if (result) {
+        return result;
+      }
     }
 
-    const xmlText = await metadataResponse.text();
-
-    // Step 2: Parse XML to extract the actual download URL
-    const downloadUrl = extractDownloadUrl(xmlText);
-
-    if (!downloadUrl) {
-      return {
-        success: false,
-        error: 'Could not find download URL in update metadata',
-      };
-    }
-
-    // Step 3: Download the actual CRX file
-    const proxyDownloadUrl = `${CORS_PROXY_URL}?url=${encodeURIComponent(downloadUrl)}`;
-
-    const crxResponse = await fetch(proxyDownloadUrl, {
-      method: 'GET',
-      redirect: 'follow',
-    });
-
-    if (!crxResponse.ok) {
-      return {
-        success: false,
-        error: `Failed to download CRX: HTTP ${crxResponse.status} ${crxResponse.statusText}`,
-      };
-    }
-
-    const data = await crxResponse.arrayBuffer();
-
-    if (data.byteLength === 0) {
-      return {
-        success: false,
-        error: 'Downloaded file is empty',
-      };
-    }
-
+    // All strategies failed
     return {
-      success: true,
-      data,
+      success: false,
+      error:
+        'Extension not available for download. This may be due to: (1) Google restricting programmatic downloads for this extension, (2) extension removed from Chrome Web Store, or (3) regional restrictions. The extension may still be installable through your browser.',
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
