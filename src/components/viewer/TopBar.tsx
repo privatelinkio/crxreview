@@ -49,6 +49,23 @@ export function TopBar() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadZip = () => {
+    if (!crx) return;
+
+    // Use the already-converted ZIP data from the store
+    const blob = new Blob([crx.zipData], { type: 'application/zip' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    // Change extension from .crx to .zip
+    const zipFileName = crx.fileName.replace(/\.crx$/, '.zip');
+    link.download = zipFileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const isLoading = loadingState === 'loading';
 
   return (
@@ -92,16 +109,28 @@ export function TopBar() {
                 <span className="text-gray-600">Loaded:</span>
                 <span className="ml-2 font-mono text-gray-900">{crx.extensionId}</span>
               </div>
-              <button
-                onClick={handleDownloadCrx}
-                className="
-                  px-3 py-1 bg-green-600 text-white rounded text-sm
-                  hover:bg-green-700 transition-colors duration-150
-                "
-                title="Download CRX file"
-              >
-                Download CRX
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownloadZip}
+                  className="
+                    px-3 py-1 bg-blue-600 text-white rounded text-sm
+                    hover:bg-blue-700 transition-colors duration-150
+                  "
+                  title="Download as ZIP file"
+                >
+                  Download ZIP
+                </button>
+                <button
+                  onClick={handleDownloadCrx}
+                  className="
+                    px-3 py-1 bg-green-600 text-white rounded text-sm
+                    hover:bg-green-700 transition-colors duration-150
+                  "
+                  title="Download CRX file"
+                >
+                  Download CRX
+                </button>
+              </div>
             </div>
           )}
         </div>
