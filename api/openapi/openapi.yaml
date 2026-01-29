@@ -1,0 +1,1165 @@
+openapi: 3.0.3
+info:
+  title: CRX Review API
+  version: 1.0.0
+  description: |
+    REST API for Chrome Extension (CRX) file analysis, parsing, and search.
+    Supports CRX2 and CRX3 formats. All uploaded files expire after 30 minutes.
+
+    ## Features
+    - Upload or download CRX files from Chrome Web Store
+    - Parse CRX headers and extract ZIP contents
+    - Generate hierarchical file trees
+    - Search file contents with regex support
+    - Filter files by pattern and category
+    - Extract individual files from extensions
+    - Download extensions as standard ZIP files
+
+    ## Rate Limits
+    - Upload: 5 requests/hour per API key
+    - Download: 10 requests/hour per IP
+    - Search: 30 requests/minute per API key
+    - General: 100 requests/hour per API key
+
+    ## Session Management
+    - Sessions expire after 30 minutes of inactivity
+    - Each session is identified by a unique UUID
+    - Session data includes file tree, metadata, and manifest information
+    - Files are stored in secure R2 storage during session lifetime
+
+    ## Error Handling
+    All errors follow a consistent JSON format with error codes and details for debugging.
+    See Error Responses section for common error codes and solutions.
+
+  contact:
+    name: CRX Review Support
+    url: https://github.com/yourusername/crxreview
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.crxreview.com/api/v1
+    description: Production
+  - url: http://localhost:8787/api/v1
+    description: Local Development (Wrangler)
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for authentication. Obtain one by contacting support.
+        Header format: X-API-Key: your-api-key-here
+
+        Alternative: Use Bearer token in Authorization header:
+        Authorization: Bearer your-api-key-here
+
+  schemas:
+    # ========== Core Response Types ==========
+
+    ApiResponse:
+      type: object
+      description: Standard API response wrapper
+      required:
+        - success
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          description: Whether request was successful
+          example: true
+        data:
+          type: object
+          description: Response payload (varies by endpoint)
+        meta:
+          type: object
+          description: Response metadata
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+              description: ISO 8601 timestamp
+              example: "2025-01-28T15:30:00.000Z"
+            requestId:
+              type: string
+              format: uuid
+              description: Unique request identifier for debugging
+              example: "550e8400-e29b-41d4-a716-446655440000"
+            version:
+              type: string
+              description: API version
+              example: "1.0.0"
+            path:
+              type: string
+              description: Request path
+              example: "/api/v1/extensions/upload"
+
+    ErrorResponse:
+      type: object
+      description: Error response format
+      required:
+        - success
+        - error
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Invalid file format"
+        message:
+          type: string
+          description: Error code for programmatic handling
+          enum:
+            - VALIDATION_ERROR
+            - NOT_FOUND
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - BAD_REQUEST
+            - CONFLICT
+            - RATE_LIMITED
+            - INTERNAL_ERROR
+            - SERVICE_UNAVAILABLE
+          example: "VALIDATION_ERROR"
+        code:
+          type: string
+          description: Deprecated, use message instead
+        details:
+          type: object
+          description: Additional error details and debugging info
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          description: When error occurred
+        requestId:
+          type: string
+          format: uuid
+          description: Request ID for support inquiries
+        path:
+          type: string
+          description: Request path
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 400
+
+    # ========== Extension Session Types ==========
+
+    ExtensionSessionResponse:
+      type: object
+      description: Metadata for an uploaded extension session
+      required:
+        - sessionId
+        - extensionId
+        - fileName
+        - fileCount
+        - size
+        - createdAt
+        - expiresAt
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+          description: Unique session identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        extensionId:
+          type: string
+          description: Extension ID from manifest (32 char alphanumeric)
+          example: "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+        fileName:
+          type: string
+          description: Original filename
+          example: "ublock-origin.crx"
+        fileCount:
+          type: integer
+          description: Total number of files in extension
+          example: 247
+        size:
+          type: integer
+          description: Extension file size in bytes
+          example: 2457600
+        createdAt:
+          type: string
+          format: date-time
+          description: Session creation timestamp
+          example: "2025-01-28T15:00:00.000Z"
+        expiresAt:
+          type: string
+          format: date-time
+          description: Session expiration timestamp (30 min after creation)
+          example: "2025-01-28T15:30:00.000Z"
+        version:
+          type: string
+          description: Extension version from manifest
+          example: "1.52.0"
+
+    # ========== Manifest Types ==========
+
+    ManifestResponse:
+      type: object
+      description: Parsed extension manifest with metadata
+      required:
+        - manifest
+        - manifestVersion
+        - permissions
+      properties:
+        manifest:
+          type: object
+          description: Complete manifest.json object
+        manifestVersion:
+          type: integer
+          description: Manifest version (2 or 3)
+          enum: [2, 3]
+          example: 3
+        permissions:
+          type: array
+          description: Permission strings from manifest
+          items:
+            type: string
+        hostPermissions:
+          type: array
+          description: Host permissions (URLs with regex)
+          items:
+            type: string
+
+    # ========== File Tree Types ==========
+
+    FileNode:
+      type: object
+      description: Represents a file or directory in extension
+      required:
+        - name
+        - path
+        - type
+      properties:
+        name:
+          type: string
+          description: File or directory name
+          example: "manifest.json"
+        path:
+          type: string
+          description: Relative path from extension root
+          example: "manifest.json"
+        type:
+          type: string
+          enum:
+            - file
+            - directory
+          description: Node type
+        size:
+          type: integer
+          description: File size in bytes (files only)
+          example: 1024
+        category:
+          type: string
+          enum:
+            - code
+            - config
+            - resource
+            - documentation
+            - asset
+            - other
+          description: File category
+          example: "config"
+        children:
+          type: array
+          description: Child nodes (directories only)
+          items:
+            $ref: '#/components/schemas/FileNode'
+
+    FileTreeResponse:
+      type: object
+      description: Extension file tree structure
+      required:
+        - type
+        - root
+        - totalFiles
+        - totalSize
+      properties:
+        type:
+          type: string
+          enum:
+            - tree
+            - flat
+          description: Response format type
+          example: "tree"
+        root:
+          $ref: '#/components/schemas/FileNode'
+          description: Root directory node
+        totalFiles:
+          type: integer
+          description: Total file count
+          example: 247
+        totalSize:
+          type: integer
+          description: Total size in bytes
+          example: 2457600
+
+    # ========== File Extraction Types ==========
+
+    FileExtractionResponse:
+      type: object
+      description: Extracted file content
+      required:
+        - path
+        - content
+        - mimeType
+        - size
+        - encoding
+      properties:
+        path:
+          type: string
+          description: File path in extension
+          example: "manifest.json"
+        content:
+          type: string
+          description: File content (base64 if binary)
+        mimeType:
+          type: string
+          description: MIME type
+          example: "application/json"
+        size:
+          type: integer
+          description: File size in bytes
+          example: 245
+        encoding:
+          type: string
+          enum:
+            - utf-8
+            - base64
+          description: Content encoding
+          example: "utf-8"
+
+    # ========== Search Types ==========
+
+    SearchMatch:
+      type: object
+      description: Single search result match
+      required:
+        - file
+        - line
+        - column
+        - match
+        - context
+      properties:
+        file:
+          type: string
+          description: File path where match was found
+          example: "src/content.js"
+        line:
+          type: integer
+          description: Line number (1-indexed)
+          example: 42
+        column:
+          type: integer
+          description: Column number (0-indexed)
+          example: 15
+        match:
+          type: string
+          description: The matched text
+          example: "chrome.storage"
+        context:
+          type: object
+          description: Surrounding lines for context
+          required:
+            - before
+            - after
+          properties:
+            before:
+              type: array
+              description: Lines before match
+              items:
+                type: string
+            after:
+              type: array
+              description: Lines after match
+              items:
+                type: string
+
+    SearchResultResponse:
+      type: object
+      description: Search results with pagination
+      required:
+        - results
+        - totalMatches
+        - searchedFiles
+        - hasMore
+      properties:
+        results:
+          type: array
+          description: Search matches (up to maxResults)
+          items:
+            $ref: '#/components/schemas/SearchMatch'
+        totalMatches:
+          type: integer
+          description: Total matches across all files
+          example: 156
+        searchedFiles:
+          type: integer
+          description: Number of files searched
+          example: 89
+        hasMore:
+          type: boolean
+          description: Whether more results available
+          example: true
+        nextOffset:
+          type: integer
+          description: Offset for next page of results
+          example: 100
+
+    # ========== Filter Types ==========
+
+    FilterResultResponse:
+      type: object
+      description: Filtered file results
+      required:
+        - files
+        - totalMatched
+      properties:
+        files:
+          type: array
+          description: Matching files
+          items:
+            $ref: '#/components/schemas/FileNode'
+        totalMatched:
+          type: integer
+          description: Total files matching filter
+          example: 47
+
+    # ========== Health Check Types ==========
+
+    HealthResponse:
+      type: object
+      description: API health status
+      required:
+        - status
+        - timestamp
+        - version
+        - services
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+            - degraded
+            - error
+          description: Overall health status
+          example: "ok"
+        timestamp:
+          type: string
+          format: date-time
+          description: Health check time
+        version:
+          type: string
+          description: API version
+          example: "1.0.0"
+        services:
+          type: object
+          description: Status of dependent services
+          properties:
+            r2:
+              type: string
+              enum:
+                - ok
+                - error
+              description: Cloudflare R2 storage status
+              example: "ok"
+            kv:
+              type: string
+              enum:
+                - ok
+                - error
+              description: Cloudflare KV cache status
+              example: "ok"
+
+    # ========== Request Types ==========
+
+    UploadRequest:
+      type: object
+      description: File upload request (multipart/form-data)
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: CRX file (binary data)
+
+    DownloadRequest:
+      type: object
+      description: Download extension from Chrome Web Store
+      required:
+        - input
+      properties:
+        input:
+          type: string
+          description: Extension ID or Chrome Web Store URL
+          example: "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+
+    SearchRequest:
+      type: object
+      description: Content search request
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Search term or regex pattern
+          minLength: 1
+          maxLength: 1000
+          example: "chrome.storage"
+        caseSensitive:
+          type: boolean
+          description: Case-sensitive search
+          default: false
+        useRegex:
+          type: boolean
+          description: Treat query as regex pattern
+          default: false
+        wholeWord:
+          type: boolean
+          description: Match whole words only
+          default: false
+        contextLines:
+          type: integer
+          description: Lines of context around match
+          minimum: 0
+          maximum: 10
+          default: 2
+        filePattern:
+          type: string
+          description: Filter files by pattern (glob or regex if useRegex=true)
+          example: "*.js"
+          default: "*"
+        maxResults:
+          type: integer
+          description: Maximum results to return
+          minimum: 1
+          maximum: 1000
+          default: 100
+
+    FilterRequest:
+      type: object
+      description: File filtering request
+      properties:
+        namePattern:
+          type: string
+          description: File name pattern (glob or regex)
+          example: "*.js"
+        useRegex:
+          type: boolean
+          description: Treat namePattern as regex
+          default: false
+        categories:
+          type: array
+          description: File categories to include
+          items:
+            type: string
+            enum:
+              - code
+              - config
+              - resource
+              - documentation
+              - asset
+              - other
+        caseSensitive:
+          type: boolean
+          description: Case-sensitive pattern matching
+          default: false
+        minSize:
+          type: integer
+          description: Minimum file size in bytes
+          default: 0
+        maxSize:
+          type: integer
+          description: Maximum file size in bytes
+          default: 52428800
+
+  parameters:
+    sessionId:
+      name: sessionId
+      in: path
+      required: true
+      description: Session ID (UUID)
+      schema:
+        type: string
+        format: uuid
+
+    filePath:
+      name: "*"
+      in: path
+      required: true
+      description: File path within extension (wildcard parameter)
+      schema:
+        type: string
+
+    fileTreeType:
+      name: type
+      in: query
+      description: Response format
+      schema:
+        type: string
+        enum:
+          - tree
+          - flat
+        default: "tree"
+
+    fileEncoding:
+      name: encoding
+      in: query
+      description: Response encoding for binary files
+      schema:
+        type: string
+        enum:
+          - utf-8
+          - base64
+        default: "utf-8"
+
+  headers:
+    X-RateLimit-Limit:
+      schema:
+        type: integer
+      description: Rate limit ceiling for the request
+    X-RateLimit-Remaining:
+      schema:
+        type: integer
+      description: Number of requests remaining in rate limit window
+    X-RateLimit-Reset:
+      schema:
+        type: integer
+      description: Unix timestamp when the rate limit resets
+    Retry-After:
+      schema:
+        type: integer
+      description: Seconds to wait before retrying (on 429 responses)
+
+paths:
+  /extensions/upload:
+    post:
+      tags:
+        - Extension Management
+      summary: Upload CRX file
+      description: Upload a Chrome extension file (CRX2 or CRX3 format) for analysis
+      operationId: uploadCRX
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CRX file to upload
+      responses:
+        '201':
+          description: Extension uploaded successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/ExtensionSessionResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              $ref: '#/components/headers/Retry-After'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/download:
+    post:
+      tags:
+        - Extension Management
+      summary: Download CRX from Chrome Web Store
+      description: Download a Chrome extension directly from the Chrome Web Store
+      operationId: downloadCRX
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DownloadRequest'
+      responses:
+        '201':
+          description: Extension downloaded successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/ExtensionSessionResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Extension not found on Chrome Web Store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              $ref: '#/components/headers/Retry-After'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Failed to download from Chrome Web Store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/{sessionId}:
+    get:
+      tags:
+        - Extension Management
+      summary: Get session metadata
+      description: Retrieve metadata for an extension session
+      operationId: getSessionMetadata
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      responses:
+        '200':
+          description: Session metadata retrieved
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/ExtensionSessionResponse'
+        '400':
+          description: Invalid session ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Extension Management
+      summary: Delete session
+      description: Delete a session and remove associated files from storage
+      operationId: deleteSession
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      responses:
+        '200':
+          description: Session deleted successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: "Session deleted successfully"
+        '400':
+          description: Invalid session ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/{sessionId}/manifest:
+    get:
+      tags:
+        - Content Access
+      summary: Get extension manifest
+      description: Retrieve and parse the manifest.json file
+      operationId: getManifest
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      responses:
+        '200':
+          description: Manifest retrieved successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/ManifestResponse'
+        '400':
+          description: Invalid session ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session or manifest not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Invalid manifest format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/{sessionId}/files:
+    get:
+      tags:
+        - Content Access
+      summary: Get file tree or list
+      description: Retrieve the hierarchical file structure of the extension
+      operationId: getFileTree
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+        - $ref: '#/components/parameters/fileTreeType'
+      responses:
+        '200':
+          description: File tree retrieved successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/FileTreeResponse'
+        '400':
+          description: Invalid session ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/{sessionId}/files/{path}:
+    get:
+      tags:
+        - Content Access
+      summary: Extract individual file
+      description: Extract a specific file from the extension
+      operationId: extractFile
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+        - $ref: '#/components/parameters/filePath'
+        - $ref: '#/components/parameters/fileEncoding'
+      responses:
+        '200':
+          description: File extracted successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/FileExtractionResponse'
+        '400':
+          description: Invalid session ID or file path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session or file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/{sessionId}/download/zip:
+    get:
+      tags:
+        - Content Access
+      summary: Download as ZIP
+      description: Download the extension as a standard ZIP file
+      operationId: downloadAsZip
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      responses:
+        '200':
+          description: ZIP file ready for download
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+            Content-Disposition:
+              schema:
+                type: string
+              description: 'attachment; filename="[extensionId].zip"'
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid session ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/{sessionId}/search:
+    post:
+      tags:
+        - Analysis
+      summary: Search file contents
+      description: Search for text or regex patterns within extension files
+      operationId: searchContent
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search completed successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/SearchResultResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              $ref: '#/components/headers/Retry-After'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /extensions/{sessionId}/filter:
+    post:
+      tags:
+        - Analysis
+      summary: Filter files
+      description: Filter extension files by name pattern, category, and size
+      operationId: filterFiles
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequest'
+      responses:
+        '200':
+          description: Filter completed successfully
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/FilterResultResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      description: Check API and dependent services health status
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Health check completed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        const: true
+                  - $ref: '#/components/schemas/HealthResponse'
+
+tags:
+  - name: Extension Management
+    description: Upload, download, and manage extension sessions
+  - name: Content Access
+    description: Access extension contents including manifest, files, and ZIP downloads
+  - name: Analysis
+    description: Search and filter extension contents with advanced options
+  - name: System
+    description: API health and status monitoring
+
+x-logo:
+  url: 'https://raw.githubusercontent.com/yourusername/crxreview/main/logo.png'
+  altText: 'CRX Review API'
+
+externalDocs:
+  description: GitHub Repository
+  url: 'https://github.com/yourusername/crxreview'

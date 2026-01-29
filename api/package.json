@@ -1,0 +1,55 @@
+{
+  "name": "crxreview-api",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers REST API for CRX Review",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev:local": "bun run src/test-server.ts",
+    "deploy": "wrangler deploy",
+    "deploy:preview": "wrangler deploy --env preview",
+    "test": "vitest",
+    "test:unit": "vitest tests/services tests/middleware tests/utils",
+    "test:integration": "vitest tests/handlers",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:debug": "node --inspect-brk ./node_modules/.bin/vitest --inspect-brk --no-isolate",
+    "build": "wrangler build",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write src",
+    "type-check": "tsc --noEmit",
+    "tail": "wrangler tail",
+    "tail:preview": "wrangler tail --env preview"
+  },
+  "dependencies": {
+    "hono": "^3.11.0",
+    "jszip": "^3.10.1",
+    "zod": "^3.22.0",
+    "fast-xml-parser": "^4.3.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.0",
+    "vitest": "^1.1.0",
+    "wrangler": "^3.22.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "rest-api",
+    "crx",
+    "chrome-extension"
+  ],
+  "author": "CRX Review Team",
+  "license": "MIT"
+}

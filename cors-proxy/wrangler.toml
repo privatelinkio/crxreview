@@ -1,0 +1,9 @@
+name = "crxreview-cors-proxy"
+main = "index.js"
+compatibility_date = "2024-01-01"
+account_id = "3b9dc4b896846934ef0221d509a182c7"
+
+# Routes (optional - can use workers.dev subdomain)
+# [[routes]]
+# pattern = "cors.crxreview.privatelink.io/*"
+# zone_name = "privatelink.io"
