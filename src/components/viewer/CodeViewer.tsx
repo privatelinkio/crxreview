@@ -148,10 +148,10 @@ export function CodeViewer({
   // Render loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full bg-white">
+      <div className="flex items-center justify-center h-full bg-white dark:bg-gray-900">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2" />
-          <p className="text-gray-700">Loading file...</p>
+          <p className="text-gray-700 dark:text-gray-300">Loading file...</p>
         </div>
       </div>
     );
@@ -165,10 +165,10 @@ export function CodeViewer({
   // Render error state
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full bg-white p-6">
+      <div className="flex items-center justify-center h-full bg-white dark:bg-gray-900 p-6">
         <div className="text-center">
-          <p className="text-red-600 font-semibold mb-2">Error</p>
-          <p className="text-gray-700">{error}</p>
+          <p className="text-red-600 dark:text-red-400 font-semibold mb-2">Error</p>
+          <p className="text-gray-700 dark:text-gray-300">{error}</p>
         </div>
       </div>
     );
@@ -178,7 +178,7 @@ export function CodeViewer({
   const canBeautifyFile = canBeautify(prismLanguage);
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       <SourceToolbar
         fileName={fileName}
         filePath={filePath}
@@ -190,7 +190,7 @@ export function CodeViewer({
       />
 
       <div className="flex-1 overflow-auto">
-        <pre className="m-0 p-4 bg-white text-sm leading-relaxed language-highlight">
+        <pre className="m-0 p-4 bg-white dark:bg-gray-900 text-sm leading-relaxed language-highlight">
           <code
             dangerouslySetInnerHTML={{ __html: highlightedHtml }}
             className={`language-${prismLanguage}`}
@@ -199,7 +199,7 @@ export function CodeViewer({
       </div>
 
       {!canBeautifyFile && (
-        <div className="text-xs text-gray-600 px-4 py-2 border-t border-gray-200 bg-gray-50">
+        <div className="text-xs text-gray-600 dark:text-gray-400 px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           Beautification not available for {language} files
         </div>
       )}

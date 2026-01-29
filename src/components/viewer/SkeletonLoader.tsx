@@ -47,7 +47,7 @@ export function SkeletonLoader({
 
   return (
     <div
-      className={`bg-gray-200 rounded animate-pulse ${className}`}
+      className={`bg-gray-200 dark:bg-gray-700 rounded animate-pulse ${className}`}
       style={style}
       role="status"
       aria-label="Loading"
@@ -113,7 +113,7 @@ export function CodeViewerSkeletonLoader() {
  */
 export function ToolbarSkeletonLoader() {
   return (
-    <div className="px-3 py-2 border-b border-gray-200 bg-gray-100 flex gap-2">
+    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex gap-2">
       {Array.from({ length: 4 }).map((_, i) => (
         <SkeletonLoader key={i} width="80px" height="32px" className="rounded" />
       ))}

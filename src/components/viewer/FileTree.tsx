@@ -68,8 +68,8 @@ function FileTreeItem({
           px-2 py-1.5 cursor-pointer flex items-center gap-2
           transition-colors duration-150
           ${isSelected && !node.isDirectory
-            ? 'bg-blue-500 text-white'
-            : 'hover:bg-gray-100'
+            ? 'bg-blue-500 text-white dark:bg-blue-600'
+            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100'
           }
         `}
         style={{ paddingLeft }}
@@ -107,7 +107,7 @@ export function FileTree({ node, level = 0 }: FileTreeProps) {
   const selectFile = useViewerStore((state) => state.selectFile);
 
   return (
-    <div className="overflow-y-auto bg-white border-r border-gray-200">
+    <div className="overflow-y-auto bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
       <div className="p-2">
         {node.children.map((child) => (
           <FileTreeItem

@@ -51,19 +51,19 @@ export function LandingPage() {
   ];
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
       {/* Navigation */}
-      <nav className="border-b border-gray-200">
+      <nav className="border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">crxreview</span>
+            <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <span className="text-xl font-bold text-gray-900 dark:text-gray-100">crxreview</span>
           </div>
           <a
             href="https://github.com/privatelinkio/crxreview"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition"
           >
             <Github size={20} />
             <span className="hidden sm:inline">GitHub</span>
@@ -74,12 +74,12 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
         <div className="text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6 leading-tight">
             Review Chrome Extensions
-            <span className="block text-blue-600">Before Installing</span>
+            <span className="block text-blue-600 dark:text-blue-400">Before Installing</span>
           </h1>
 
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
             Inspect the source code of any Chrome extension directly in your browser.
             Verify permissions, detect suspicious patterns, and make informed decisions
             about what you install.
@@ -88,7 +88,7 @@ export function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
               to="/app"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-lg"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold text-lg"
             >
               Start Reviewing
               <ArrowRight size={20} />
@@ -96,25 +96,25 @@ export function LandingPage() {
 
             <a
               href="#features"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition font-semibold text-lg"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition font-semibold text-lg"
             >
               Learn More
             </a>
           </div>
 
-          <p className="text-gray-700 text-sm">
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
             100% free and open source. Runs entirely in your browser.
           </p>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="bg-gray-50 border-t border-gray-200">
+      <section id="features" className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 text-center mb-4">
             Powerful Features
           </h2>
-          <p className="text-gray-600 text-center mb-16 max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 text-center mb-16 max-w-2xl mx-auto">
             Everything you need to understand and verify Chrome extensions
           </p>
 
@@ -124,15 +124,15 @@ export function LandingPage() {
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-200 transition"
+                  className="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition"
                 >
-                  <div className="inline-flex p-3 bg-blue-50 rounded-lg mb-4">
-                    <Icon className="w-6 h-6 text-blue-600" />
+                  <div className="inline-flex p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg mb-4">
+                    <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
                 </div>
               );
             })}
@@ -142,7 +142,7 @@ export function LandingPage() {
 
       {/* How It Works */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-16">
+        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 text-center mb-16">
           How It Works
         </h2>
 
@@ -168,23 +168,23 @@ export function LandingPage() {
             },
           ].map((item, index) => (
             <div key={index} className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-full font-bold text-lg mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 dark:bg-blue-500 text-white rounded-full font-bold text-lg mb-4">
                 {item.step}
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
-              <p className="text-gray-600">{item.description}</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{item.title}</h3>
+              <p className="text-gray-600 dark:text-gray-300">{item.description}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-700">
+      <section className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Ready to Review?
           </h2>
-          <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-blue-100 dark:text-blue-200 text-lg mb-8 max-w-2xl mx-auto">
             Start analyzing Chrome extensions right now. No account required.
           </p>
           <Link
@@ -198,29 +198,29 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-gray-50">
+      <footer className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-6 h-6 text-blue-600" />
-                <span className="font-bold text-gray-900">crxreview</span>
+                <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <span className="font-bold text-gray-900 dark:text-gray-100">crxreview</span>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Review Chrome extensions safely and securely
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li>
-                  <Link to="/app" className="hover:text-gray-900 transition">
+                  <Link to="/app" className="hover:text-gray-900 dark:hover:text-gray-100 transition">
                     Viewer
                   </Link>
                 </li>
                 <li>
-                  <a href="#features" className="hover:text-gray-900 transition">
+                  <a href="#features" className="hover:text-gray-900 dark:hover:text-gray-100 transition">
                     Features
                   </a>
                 </li>
@@ -228,14 +228,14 @@ export function LandingPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li>
                   <a
                     href="https://developer.chrome.com/docs/extensions/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-gray-900 transition"
+                    className="hover:text-gray-900 dark:hover:text-gray-100 transition"
                   >
                     Chrome Extension Docs
                   </a>
@@ -244,12 +244,12 @@ export function LandingPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Open Source</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Open Source</h4>
               <a
                 href="https://github.com/privatelinkio/crxreview"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition"
+                className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition"
               >
                 <Github size={18} />
                 GitHub
@@ -257,8 +257,8 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-8">
-            <p className="text-center text-sm text-gray-600">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
               crxreview - Inspect Chrome Extensions Safely
             </p>
           </div>

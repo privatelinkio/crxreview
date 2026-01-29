@@ -61,9 +61,9 @@ export function PanelResizer({
       ref={resizerRef}
       onMouseDown={() => setIsDragging(true)}
       className={`
-        w-1 bg-gray-300 hover:bg-blue-500 cursor-col-resize
+        w-1 bg-gray-300 dark:bg-gray-600 hover:bg-blue-500 dark:hover:bg-blue-400 cursor-col-resize
         transition-colors duration-150 flex-shrink-0
-        ${isDragging ? 'bg-blue-500' : ''}
+        ${isDragging ? 'bg-blue-500 dark:bg-blue-400' : ''}
       `}
       title="Drag to resize panels"
     />

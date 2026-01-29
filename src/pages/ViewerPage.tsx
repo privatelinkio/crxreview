@@ -157,19 +157,19 @@ export function ViewerPage() {
   // Render empty state
   if (!crx || loadingState === 'loading') {
     return (
-      <div className="h-screen flex flex-col bg-gray-50">
+      <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
         <TopBar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             {loadingState === 'loading' ? (
               <>
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4" />
-                <p className="text-gray-600">Loading extension...</p>
+                <p className="text-gray-600 dark:text-gray-400">Loading extension...</p>
               </>
             ) : (
               <>
-                <p className="text-gray-800 text-lg">No extension loaded</p>
-                <p className="text-gray-700 text-sm mt-2">
+                <p className="text-gray-800 dark:text-gray-200 text-lg">No extension loaded</p>
+                <p className="text-gray-700 dark:text-gray-300 text-sm mt-2">
                   Enter a Chrome Web Store URL or Extension ID above to get started
                 </p>
               </>
@@ -183,12 +183,12 @@ export function ViewerPage() {
   // Render error state
   if (loadingState === 'error' && !crx) {
     return (
-      <div className="h-screen flex flex-col bg-gray-50">
+      <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
         <TopBar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 font-semibold mb-2">Failed to load extension</p>
-            <p className="text-gray-600">Try entering a valid Chrome Web Store URL</p>
+            <p className="text-red-600 dark:text-red-400 font-semibold mb-2">Failed to load extension</p>
+            <p className="text-gray-600 dark:text-gray-400">Try entering a valid Chrome Web Store URL</p>
           </div>
         </div>
       </div>
@@ -197,7 +197,7 @@ export function ViewerPage() {
 
   // Render main viewer
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <TopBar />
 
       <div className="flex-1 flex min-h-0 flex-col lg:flex-row">
@@ -207,15 +207,15 @@ export function ViewerPage() {
             <div
               ref={fileTreeRef}
               style={isMobile ? {} : { width: `${leftPanelWidth}px` }}
-              className="flex flex-col lg:min-w-0 border-b-2 lg:border-b-0 border-gray-200"
+              className="flex flex-col lg:min-w-0 border-b-2 lg:border-b-0 border-gray-200 dark:border-gray-700"
             >
-              <div className="px-3 py-2 border-b border-gray-200 bg-gray-100">
+              <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-gray-900">Files</h2>
+                  <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Files</h2>
                   {isMobile && selectedFilePath && (
                     <button
                       onClick={() => selectFile(selectedFilePath)}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                       title="View code"
                     >
                       View
@@ -240,14 +240,14 @@ export function ViewerPage() {
         <div className="flex-1 flex flex-col min-w-0 lg:min-h-0">
           {selectedFilePath ? (
             <>
-              <div className="px-3 py-2 border-b border-gray-200 bg-gray-100 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-900 truncate">
+              <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                   {getSelectedFileName()}
                 </h2>
                 {isMobile && (
                   <button
                     onClick={() => selectFile('')}
-                    className="ml-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    className="ml-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                     title="Back to file list"
                   >
                     Back
@@ -257,7 +257,7 @@ export function ViewerPage() {
 
               {/* Search Panel */}
               {showSearchPanel && (
-                <div className="border-b border-gray-200 bg-white p-4 shadow-sm">
+                <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
                   <SearchAndFilterPanel
                     onSelectFile={handleSelectFile}
                     className="m-0"
@@ -268,8 +268,8 @@ export function ViewerPage() {
               {fileLoadError ? (
                 <div className="flex-1 flex items-center justify-center p-6">
                   <div className="text-center">
-                    <p className="text-red-600 font-semibold mb-2">Error loading file</p>
-                    <p className="text-gray-600 text-sm">{fileLoadError}</p>
+                    <p className="text-red-600 dark:text-red-400 font-semibold mb-2">Error loading file</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">{fileLoadError}</p>
                   </div>
                 </div>
               ) : currentFileData ? (
@@ -283,18 +283,18 @@ export function ViewerPage() {
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2" />
-                    <p className="text-gray-600">Loading file...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading file...</p>
                   </div>
                 </div>
               )}
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-white">
+            <div className="flex-1 flex items-center justify-center bg-white dark:bg-gray-900">
               <div className="text-center space-y-2">
-                <p className="text-gray-800">Select a file to view its contents</p>
-                <p className="text-gray-700 text-sm">
-                  Press <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+F</kbd> or{' '}
-                  <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Cmd+F</kbd> to search
+                <p className="text-gray-800 dark:text-gray-200">Select a file to view its contents</p>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
+                  Press <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs">Ctrl+F</kbd> or{' '}
+                  <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs">Cmd+F</kbd> to search
                 </p>
               </div>
             </div>

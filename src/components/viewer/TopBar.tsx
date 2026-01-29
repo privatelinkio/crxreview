@@ -69,7 +69,7 @@ export function TopBar() {
   const isLoading = loadingState === 'loading';
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm relative z-10">
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm relative z-10">
       {/* Main toolbar */}
       <div className="px-4 py-4">
         <div className="flex flex-col gap-3">
@@ -82,10 +82,10 @@ export function TopBar() {
               onKeyPress={handleKeyPress}
               placeholder="Enter Chrome Web Store URL or Extension ID..."
               className="
-                flex-1 px-3 py-2 border border-gray-300 rounded
+                flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                text-sm relative z-10 text-gray-900 bg-white
-                placeholder:text-gray-700
+                text-sm relative z-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700
+                placeholder:text-gray-500 dark:placeholder:text-gray-400
               "
               disabled={isLoading}
               style={{ pointerEvents: 'auto' }}
@@ -94,8 +94,8 @@ export function TopBar() {
               onClick={handleLoadFromUrl}
               disabled={isLoading || !urlInput.trim()}
               className="
-                px-4 py-2 bg-blue-600 text-white rounded
-                hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
+                px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded
+                hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed
                 transition-colors duration-150 text-sm font-medium
               "
             >
@@ -105,17 +105,17 @@ export function TopBar() {
 
           {/* Extension Info & Action Buttons */}
           {crx && (
-            <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 rounded border border-gray-200">
+            <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
               <div className="text-sm">
-                <span className="text-gray-700 font-medium">Loaded:</span>
-                <span className="ml-2 font-mono text-gray-900">{crx.extensionId}</span>
+                <span className="text-gray-700 dark:text-gray-300 font-medium">Loaded:</span>
+                <span className="ml-2 font-mono text-gray-900 dark:text-gray-100">{crx.extensionId}</span>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleDownloadZip}
                   className="
-                    px-3 py-1 bg-blue-600 text-white rounded text-sm
-                    hover:bg-blue-700 transition-colors duration-150
+                    px-3 py-1 bg-blue-600 dark:bg-blue-500 text-white rounded text-sm
+                    hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-150
                   "
                   title="Download as ZIP file"
                 >
@@ -124,8 +124,8 @@ export function TopBar() {
                 <button
                   onClick={handleDownloadCrx}
                   className="
-                    px-3 py-1 bg-green-600 text-white rounded text-sm
-                    hover:bg-green-700 transition-colors duration-150
+                    px-3 py-1 bg-green-600 dark:bg-green-500 text-white rounded text-sm
+                    hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-150
                   "
                   title="Download CRX file"
                 >
@@ -139,15 +139,15 @@ export function TopBar() {
 
       {/* Error Message */}
       {error && (
-        <div className="border-t border-red-200 bg-red-50 px-4 py-3 flex items-center justify-between">
+        <div className="border-t border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-red-600 font-semibold">Error:</span>
-            <span className="text-red-700 text-sm">{error}</span>
+            <span className="text-red-600 dark:text-red-400 font-semibold">Error:</span>
+            <span className="text-red-700 dark:text-red-300 text-sm">{error}</span>
           </div>
           <button
             onClick={clearError}
             className="
-              ml-2 text-red-600 hover:text-red-800 font-medium text-sm
+              ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium text-sm
               transition-colors duration-150
             "
           >
