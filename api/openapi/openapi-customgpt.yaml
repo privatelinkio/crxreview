@@ -14,6 +14,7 @@ paths:
       operationId: healthCheck
       summary: Health check
       description: Check API health status
+      x-openai-isConsequential: false
       responses:
         '200':
           description: API is healthy
@@ -45,7 +46,8 @@ paths:
     post:
       operationId: downloadExtension
       summary: Download extension from Chrome Web Store
-      description: Download a Chrome extension by ID or URL
+      description: Download a Chrome extension by ID or URL. Creates a new session that expires in 30 minutes.
+      x-openai-isConsequential: true
       requestBody:
         required: true
         content:
@@ -97,6 +99,7 @@ paths:
       operationId: getSessionMetadata
       summary: Get extension session metadata
       description: Retrieve metadata about a downloaded extension session
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
@@ -136,6 +139,7 @@ paths:
       operationId: deleteSession
       summary: Delete extension session
       description: Delete an extension session and all associated files
+      x-openai-isConsequential: true
       parameters:
         - name: sessionId
           in: path
@@ -164,6 +168,7 @@ paths:
       operationId: getManifest
       summary: Get extension manifest
       description: Retrieve and parse the manifest.json file
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
@@ -203,6 +208,7 @@ paths:
       operationId: getFileTree
       summary: Get file tree
       description: Get hierarchical file tree or flat file list
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
@@ -244,6 +250,7 @@ paths:
       operationId: searchContent
       summary: Search file contents
       description: Search for text or regex patterns across all files
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
@@ -336,6 +343,7 @@ paths:
       operationId: filterFiles
       summary: Filter files
       description: Filter files by name pattern and category
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
@@ -389,7 +397,8 @@ paths:
     post:
       operationId: uploadExtension
       summary: Upload CRX file
-      description: Upload a Chrome extension CRX file for analysis
+      description: Upload a Chrome extension CRX file for analysis. Creates a new session that expires in 30 minutes.
+      x-openai-isConsequential: true
       requestBody:
         required: true
         content:
@@ -441,6 +450,7 @@ paths:
       operationId: extractFile
       summary: Extract specific file
       description: Extract and return a specific file from the extension
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
@@ -492,6 +502,7 @@ paths:
       operationId: downloadAsZip
       summary: Download extension as ZIP
       description: Download the extension as a standard ZIP file (CRX header stripped)
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
