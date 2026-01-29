@@ -47,7 +47,7 @@ export function PasswordModal({ onCorrectPassword }: PasswordModalProps) {
         <h2 className="text-2xl font-bold text-center mb-2 text-gray-900 dark:text-white">
           Protected Area
         </h2>
-        <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
           Please enter the password to access CRX Review
         </p>
 
@@ -83,7 +83,7 @@ export function PasswordModal({ onCorrectPassword }: PasswordModalProps) {
           </button>
         </form>
 
-        <p className="mt-6 text-xs text-center text-gray-500 dark:text-gray-400">
+        <p className="mt-6 text-xs text-center text-gray-700 dark:text-gray-400">
           This is a password-protected application for authorized users only.
         </p>
       </div>

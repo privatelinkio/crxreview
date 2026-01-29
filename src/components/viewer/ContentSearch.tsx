@@ -180,7 +180,7 @@ export function ContentSearch({
           <h2 className="text-lg font-semibold text-gray-900">Search Content</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1"
+            className="text-gray-700 hover:text-gray-900 p-1"
             aria-label="Close search"
           >
             <X className="w-5 h-5" />
@@ -297,7 +297,7 @@ export function ContentSearch({
         {/* Results */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {search.results.length === 0 && !search.isSearching && search.query && (
-            <div className="flex-1 flex items-center justify-center text-gray-500 p-4">
+            <div className="flex-1 flex items-center justify-center text-gray-700 p-4">
               <div className="text-center">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p>No matches found</p>
@@ -306,7 +306,7 @@ export function ContentSearch({
           )}
 
           {search.results.length === 0 && !search.isSearching && !search.query && (
-            <div className="flex-1 flex items-center justify-center text-gray-500 p-4">
+            <div className="flex-1 flex items-center justify-center text-gray-700 p-4">
               <div className="text-center">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p>Enter a search query to begin</p>

@@ -85,6 +85,7 @@ export function TopBar() {
                 flex-1 px-3 py-2 border border-gray-300 rounded
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                 text-sm relative z-10 text-gray-900 bg-white
+                placeholder:text-gray-700
               "
               disabled={isLoading}
               style={{ pointerEvents: 'auto' }}

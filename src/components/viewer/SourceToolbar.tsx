@@ -74,8 +74,8 @@ export function SourceToolbar({
           <span className="text-sm text-gray-600">
             {fileSizeFormatted}
           </span>
-          <span className="text-gray-300">|</span>
-          <span className="text-xs text-gray-500 font-mono truncate max-w-96">
+          <span className="text-gray-700">|</span>
+          <span className="text-xs text-gray-700 font-mono truncate max-w-96">
             {filePath}
           </span>
         </div>

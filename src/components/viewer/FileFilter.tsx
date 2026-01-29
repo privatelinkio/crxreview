@@ -84,7 +84,7 @@ export function FileFilter({ onFilterChange, className = '' }: FileFilterProps) 
                   filter.setNamePattern('');
                   onFilterChange?.();
                 }}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-900"
                 aria-label="Clear pattern"
               >
                 <X className="w-4 h-4" />
@@ -102,7 +102,7 @@ export function FileFilter({ onFilterChange, className = '' }: FileFilterProps) 
         )}
 
         {/* Help Text */}
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-700">
           {filter.useRegex
             ? 'Use regular expressions (e.g., ".*\\.js$" for JavaScript files)'
             : 'Use wildcards: * (any chars), ? (single char), ** (any directory)'}
