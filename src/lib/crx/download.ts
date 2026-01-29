@@ -8,7 +8,7 @@ import { isValidExtensionId } from './url-patterns';
  * CORS proxy URL for bypassing Chrome Web Store CORS restrictions
  * Deployed on Cloudflare Workers
  */
-const CORS_PROXY_URL = 'https://crxreview-cors-proxy.visiquate-inc.workers.dev';
+const CORS_PROXY_URL = 'https://crxreview-cors-proxy.brentley.workers.dev';
 
 interface DownloadSuccess {
   success: true;
