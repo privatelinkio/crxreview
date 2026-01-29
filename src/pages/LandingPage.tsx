@@ -102,7 +102,7 @@ export function LandingPage() {
             </a>
           </div>
 
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-700 text-sm">
             100% free and open source. Runs entirely in your browser.
           </p>
         </div>

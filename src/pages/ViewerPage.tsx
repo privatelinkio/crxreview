@@ -168,8 +168,8 @@ export function ViewerPage() {
               </>
             ) : (
               <>
-                <p className="text-gray-600 text-lg">No extension loaded</p>
-                <p className="text-gray-500 text-sm mt-2">
+                <p className="text-gray-800 text-lg">No extension loaded</p>
+                <p className="text-gray-700 text-sm mt-2">
                   Enter a Chrome Web Store URL or Extension ID above to get started
                 </p>
               </>
@@ -291,8 +291,8 @@ export function ViewerPage() {
           ) : (
             <div className="flex-1 flex items-center justify-center bg-white">
               <div className="text-center space-y-2">
-                <p className="text-gray-600">Select a file to view its contents</p>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-800">Select a file to view its contents</p>
+                <p className="text-gray-700 text-sm">
                   Press <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+F</kbd> or{' '}
                   <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Cmd+F</kbd> to search
                 </p>
