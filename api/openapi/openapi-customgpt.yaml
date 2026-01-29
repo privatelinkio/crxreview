@@ -139,7 +139,7 @@ paths:
       operationId: deleteSession
       summary: Delete extension session
       description: Delete an extension session and all associated files
-      x-openai-isConsequential: true
+      x-openai-isConsequential: false
       parameters:
         - name: sessionId
           in: path
@@ -398,7 +398,7 @@ paths:
       operationId: uploadExtension
       summary: Upload CRX file
       description: Upload a Chrome extension CRX file for analysis. Creates a new session that expires in 30 minutes.
-      x-openai-isConsequential: true
+      x-openai-isConsequential: false
       requestBody:
         required: true
         content:
