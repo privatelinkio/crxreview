@@ -47,7 +47,7 @@ paths:
       operationId: downloadExtension
       summary: Download extension from Chrome Web Store
       description: Download a Chrome extension by ID or URL. Creates a new session that expires in 30 minutes.
-      x-openai-isConsequential: true
+      x-openai-isConsequential: false
       requestBody:
         required: true
         content:
