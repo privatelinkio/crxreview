@@ -106,7 +106,7 @@ export function TopBar() {
           {crx && (
             <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 rounded border border-gray-200">
               <div className="text-sm">
-                <span className="text-gray-600">Loaded:</span>
+                <span className="text-gray-700 font-medium">Loaded:</span>
                 <span className="ml-2 font-mono text-gray-900">{crx.extensionId}</span>
               </div>
               <div className="flex gap-2">

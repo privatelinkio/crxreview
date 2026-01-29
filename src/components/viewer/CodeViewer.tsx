@@ -151,7 +151,7 @@ export function CodeViewer({
       <div className="flex items-center justify-center h-full bg-white">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2" />
-          <p className="text-gray-600">Loading file...</p>
+          <p className="text-gray-700">Loading file...</p>
         </div>
       </div>
     );
@@ -168,7 +168,7 @@ export function CodeViewer({
       <div className="flex items-center justify-center h-full bg-white p-6">
         <div className="text-center">
           <p className="text-red-600 font-semibold mb-2">Error</p>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-gray-700">{error}</p>
         </div>
       </div>
     );
@@ -199,7 +199,7 @@ export function CodeViewer({
       </div>
 
       {!canBeautifyFile && (
-        <div className="text-xs text-gray-500 px-4 py-2 border-t border-gray-200 bg-gray-50">
+        <div className="text-xs text-gray-600 px-4 py-2 border-t border-gray-200 bg-gray-50">
           Beautification not available for {language} files
         </div>
       )}

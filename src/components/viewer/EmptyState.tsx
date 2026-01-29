@@ -40,7 +40,7 @@ export function EmptyState({
     <div className={`flex flex-col items-center justify-center py-12 px-4 ${className}`}>
       {icon && <div className="text-5xl mb-4">{icon}</div>}
       <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">{title}</h3>
-      {description && <p className="text-gray-600 text-center text-sm mb-4 max-w-sm">{description}</p>}
+      {description && <p className="text-gray-700 text-center text-sm mb-4 max-w-sm">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -148,7 +148,7 @@ export function LoadingState({ message = 'Loading...' }: { message?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12">
       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4" />
-      <p className="text-gray-600 text-sm">{message}</p>
+      <p className="text-gray-700 text-sm">{message}</p>
     </div>
   );
 }

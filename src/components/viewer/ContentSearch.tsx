@@ -180,7 +180,7 @@ export function ContentSearch({
           <h2 className="text-lg font-semibold text-gray-900">Search Content</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1"
+            className="text-gray-500 hover:text-gray-700 p-1"
             aria-label="Close search"
           >
             <X className="w-5 h-5" />
